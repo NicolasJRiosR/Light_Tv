@@ -4,10 +4,9 @@ enum class RemoteAction(val label: String) {
     POWER_TOGGLE("Encender / apagar"), POWER_ON("Encender"), POWER_OFF("Apagar"),
     BRIGHTER("Brillo +"), DARKER("Brillo −"),
     RED("Rojo"), REDDISH("Coral"), ORANGE("Naranja"), YELLOWISH("Ámbar"), YELLOW("Amarillo"),
-    YELLOW_ALT("Amarillo · otro código"),
     GREEN("Verde"), GREENISH("Verde lima"), LIGHT_GREEN("Verde claro"),
-    TURQUOISE("Turquesa"), CYAN("Cian"), AQUA("Aqua"),
-    BLUE("Azul"), DEEPBLUE("Azul profundo"), PURPLE("Morado"), MAGENTA("Magenta"), PINK("Rosa"), PINK_ALT("Rosa · otro código"), WHITE("Blanco"),
+    TURQUOISE("Turquesa"), CYAN("Cian"),
+    BLUE("Azul"), DEEPBLUE("Azul profundo"), PURPLE("Morado"), MAGENTA("Magenta"), PINK("Rosa"), WHITE("Blanco"),
     TANGERINE("Mandarina"), SKY("Celeste"), ROSE("Rosa claro"),
     FLASH("Flash"), STROBE("Strobe"), FADE("Fade"), SMOOTH("Smooth")
 }
@@ -54,9 +53,6 @@ object RgbRemotePresets {
                 RemoteAction.SKY to 0x11,
                 RemoteAction.ROSE to 0x12,
                 RemoteAction.FADE to 0x13,
-                RemoteAction.YELLOW_ALT to 0x14,
-                RemoteAction.AQUA to 0x15,
-                RemoteAction.PINK_ALT to 0x16,
                 RemoteAction.SMOOTH to 0x17
             ),
             source = "Base existente conservada; tonos candidatos según la secuencia NEC EF00 publicada en github.com/eleksaggr/ir-remote"
