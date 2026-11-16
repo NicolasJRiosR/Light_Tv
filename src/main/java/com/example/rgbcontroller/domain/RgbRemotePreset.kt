@@ -28,25 +28,6 @@ data class RgbRemotePreset(
 object RgbRemotePresets {
     val all = listOf(
         RgbRemotePreset(
-            id = "rgb44-nec",
-            name = "RGB genérico · NEC · 44 teclas",
-            address = 0x0000,
-            extendedAddress = false,
-            commands = mapOf(
-                RemoteAction.POWER_TOGGLE to 0x02,
-                RemoteAction.RED to 0x1A,
-                RemoteAction.GREEN to 0x9A,
-                RemoteAction.BLUE to 0xA2,
-                RemoteAction.WHITE to 0x22,
-                RemoteAction.YELLOW to 0x18,
-                RemoteAction.PURPLE to 0xB2,
-                RemoteAction.CYAN to 0x98,
-                RemoteAction.FLASH to 0xD0,
-                RemoteAction.FADE to 0x60
-            ),
-            source = "Tabla comunitaria de control LED RGB de 44 teclas"
-        ),
-        RgbRemotePreset(
             id = "rgb21-nec-ext",
             name = "RGB + blanco · NEC extendido · 21 teclas",
             address = 0xEF00,
