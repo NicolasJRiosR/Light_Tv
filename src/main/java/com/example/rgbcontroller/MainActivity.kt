@@ -45,14 +45,10 @@ class MainActivity : ComponentActivity() {
 class MainViewModel(private val ir: IrTransmitter) : ViewModel() {
     var status by mutableStateOf<IrStatus?>(null); private set
     var message by mutableStateOf("Comprueba el emisor antes de probar los códigos."); private set
-    var frequency by mutableStateOf("38000"); private set
-    var pattern by mutableStateOf(""); private set
     var busy by mutableStateOf(false); private set
     var selectedPreset by mutableStateOf(RgbRemotePresets.all.first()); private set
 
     fun selectPreset(preset: RgbRemotePreset) { selectedPreset = preset }
-    fun onFrequencyChanged(value: String) { frequency = value.filter(Char::isDigit).take(6) }
-    fun onPatternChanged(value: String) { pattern = value.filter { it.isDigit() || it == ',' || it.isWhitespace() }.take(400) }
     fun hasCode(action: RemoteAction) = selectedPreset.commands.containsKey(action)
 
     fun diagnose() {
@@ -82,21 +78,6 @@ class MainViewModel(private val ir: IrTransmitter) : ViewModel() {
         transmit(NecEncoder.CARRIER_HZ, raw, "${action.label} · ${selectedPreset.name}")
     }
 
-    suspend fun sendRaw() {
-        if (status !is IrStatus.Ready) {
-            message = "Primero pulsa Comprobar emisor IR."
-            return
-        }
-        val hz = frequency.toIntOrNull()
-        val tokens = pattern.split(',', ' ', '\n', '\t').filter(String::isNotBlank)
-        val values = tokens.mapNotNull(String::toIntOrNull)
-        if (hz == null || tokens.isEmpty() || values.size != tokens.size) {
-            message = "Revisa la frecuencia y escribe duraciones numéricas separadas por comas."
-            return
-        }
-        transmit(hz, values.toIntArray(), "Patrón manual")
-    }
-
     private suspend fun transmit(hz: Int, raw: IntArray, label: String) {
         busy = true
         try {
@@ -123,18 +104,12 @@ class MainViewModel(private val ir: IrTransmitter) : ViewModel() {
 @Composable
 private fun ControllerScreen(vm: MainViewModel) {
     val scope = rememberCoroutineScope()
-    var selectedTab by remember { mutableIntStateOf(0) }
     var presetMenuOpen by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { vm.diagnose() }
 
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp), verticalArrangement = Arrangement.spacedBy(18.dp)) {
         Text("RGB Controller", style = MaterialTheme.typography.headlineMedium)
         Text("Control infrarrojo", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.secondary)
-
-        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-            SegmentedButton(selected = selectedTab == 0, onClick = { selectedTab = 0 }, shape = SegmentedButtonDefaults.itemShape(0, 2)) { Text("Colores") }
-            SegmentedButton(selected = selectedTab == 1, onClick = { selectedTab = 1 }, shape = SegmentedButtonDefaults.itemShape(1, 2)) { Text("Prueba manual") }
-        }
 
         Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
             Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -144,7 +119,6 @@ private fun ControllerScreen(vm: MainViewModel) {
             }
         }
 
-        if (selectedTab == 0) {
             Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
                 Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
                     Text("Perfil de códigos candidato", style = MaterialTheme.typography.titleMedium)
@@ -242,17 +216,7 @@ private fun ControllerScreen(vm: MainViewModel) {
                         }
                 }
             }
-        } else {
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
-                Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text("Transmitir patrón manual", style = MaterialTheme.typography.titleMedium)
-                    OutlinedTextField(value = vm.frequency, onValueChange = vm::onFrequencyChanged, label = { Text("Frecuencia portadora (Hz)") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-                    OutlinedTextField(value = vm.pattern, onValueChange = vm::onPatternChanged, label = { Text("Marca, espacio, … (µs)") }, placeholder = { Text("Duraciones medidas separadas por comas") }, minLines = 3, modifier = Modifier.fillMaxWidth())
-                    Text("Empieza con una marca y alterna marca/espacio. Usa duraciones medidas de tu control original; el patrón debe durar menos de 2 s.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Button(onClick = { scope.launch { vm.sendRaw() } }, enabled = !vm.busy && vm.status is IrStatus.Ready && vm.pattern.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text(if (vm.busy) "Transmitiendo…" else "Transmitir patrón") }
-                }
-            }
-        }
+
         Text("El teléfono solo transmite IR; no puede aprender ni confirmar la recepción de la lámpara.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
